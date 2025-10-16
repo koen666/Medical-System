@@ -323,6 +323,7 @@
 import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { ensureApiAvailable, buildUrl } from '@/config/api'
 
 const router = useRouter()
 
@@ -450,7 +451,8 @@ const sendMessage = async () => {
       formData.append('image', pendingImageFile, pendingImageFile.name)
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 120000)
-      const resp = await fetch('http://8.138.92.166:8000/image2text', {
+      if (!ensureApiAvailable(ElMessage)) return
+      const resp = await fetch(buildUrl('/image2text'), {
         method: 'POST',
         body: formData,
         signal: controller.signal
@@ -555,7 +557,8 @@ const sendMessage = async () => {
 
 const extractKeywords = async (text) => {
   try {
-    const resp = await fetch('http://8.138.92.166:8000/extract_keywords', {
+    if (!ensureApiAvailable(ElMessage)) return
+    const resp = await fetch(buildUrl('/extract_keywords'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -694,7 +697,8 @@ const handleVoiceInput = async () => {
           const formData = new FormData()
           // 字段名 audio，文件名带后缀
           formData.append('audio', audioBlob, `recording.${ext}`)
-          const resp = await fetch('http://8.138.92.166:8000/audio2text', {
+          if (!ensureApiAvailable(ElMessage)) return
+          const resp = await fetch(buildUrl('/audio2text'), {
             method: 'POST',
             body: formData
           })
@@ -814,7 +818,8 @@ const handleExport = async () => {
     
     ElMessage.info('正在生成诊断报告...')
     
-    const resp = await fetch('http://8.138.92.166:8000/generate_report', {
+    if (!ensureApiAvailable(ElMessage)) return
+    const resp = await fetch(buildUrl('/generate_report'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
